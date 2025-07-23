@@ -3,6 +3,18 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
+type WPPost = {
+  id: number
+  title: { rendered: string }
+  link: string
+  date: string
+  _embedded?: {
+    'wp:featuredmedia'?: {
+      source_url: string
+    }[]
+  }
+}
+
 type Post = {
   id: number
   title: { rendered: string }
@@ -25,9 +37,9 @@ async function getPosts(): Promise<Post[]> {
       return []
     }
 
-    const data = await res.json()
+    const data: WPPost[] = await res.json()
 
-    return data.map((post: any) => ({
+    return data.map((post) => ({
       id: post.id,
       title: post.title,
       link: post.link,
