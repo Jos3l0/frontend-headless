@@ -13,19 +13,30 @@ type Post = {
 
 async function getPosts(): Promise<Post[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/posts`, {
-      cache: 'no-store',
-    })
+    const res = await fetch(
+      'https://mendoza.edu.ar/wp-json/wp/v2/posts?categories=6&per_page=8&_embed',
+      {
+        next: { revalidate: 60 },
+      }
+    )
 
     if (!res.ok) {
-      console.error('ERROR AL OBTENER POSTS:', res.statusText)
+      console.error('Error al obtener posts:', res.statusText)
       return []
     }
 
     const data = await res.json()
-    return data
+
+    return data.map((post: any) => ({
+      id: post.id,
+      title: post.title,
+      link: post.link,
+      date: post.date,
+      featured_media_url:
+        post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/placeholder.jpg',
+    }))
   } catch (err) {
-    console.error('ERROR FATAL EN getPosts():', err)
+    console.error('Error fatal en getPosts:', err)
     return []
   }
 }
