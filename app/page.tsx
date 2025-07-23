@@ -8,36 +8,32 @@ type Post = {
   id: number
   title: { rendered: string }
   link: string
-  featured_media: number
   date: string
-}
-
-type MenuItem = {
-  id: number
-  title: string
-  url: string
+  _embedded?: {
+    'wp:featuredmedia'?: { source_url: string }[]
+  }
 }
 
 export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([])
-  const [menu, setMenu] = useState<MenuItem[]>([])
-  const [images, setImages] = useState<string[]>([
+  const [featuredImages, setFeaturedImages] = useState<{ [id: number]: string }>({})
+
+  const sliderImages = [
     '/slider1.jpg',
     '/slider2.jpg',
     '/slider3.jpg',
     '/slider4.jpg',
-  ])
-  const [featuredImages, setFeaturedImages] = useState<{ [id: number]: string }>({})
+  ]
 
   useEffect(() => {
     fetch(
       'https://mendoza.edu.ar/wp-json/wp/v2/posts?categories=6&per_page=8&_embed'
     )
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: Post[]) => {
         setPosts(data)
         const imgMap: { [id: number]: string } = {}
-        data.forEach((post: any) => {
+        data.forEach((post) => {
           const img =
             post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/placeholder.jpg'
           imgMap[post.id] = img
@@ -63,11 +59,10 @@ export default function HomePage() {
 
       <section className="relative w-full overflow-hidden">
         <div className="w-full h-[320px] md:h-[460px] bg-blue-900 flex">
-          {images.map((src, index) => (
+          {sliderImages.map((src, index) => (
             <div
               key={index}
-              className="flex-shrink-0 w-full h-full relative animate-fade"
-              style={{ animationDelay: `${index * 4}s` }}
+              className="flex-shrink-0 w-full h-full relative"
             >
               <Image
                 src={src}
@@ -99,7 +94,13 @@ export default function HomePage() {
                     className="text-gray-800 font-semibold text-sm md:text-base mb-2 line-clamp-3"
                     dangerouslySetInnerHTML={{ __html: post.title.rendered }}
                   />
-                  <p className="text-gray-500 text-xs">{new Date(post.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                  <p className="text-gray-500 text-xs">
+                    {new Date(post.date).toLocaleDateString('es-AR', {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </p>
                 </div>
               </div>
             </Link>
