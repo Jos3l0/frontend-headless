@@ -1,52 +1,45 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
+import Link from 'next/link'
+
+export const dynamic = 'force-dynamic'
 
 type Post = {
   id: number
   title: { rendered: string }
   link: string
   date: string
-  _embedded?: {
-    'wp:featuredmedia'?: { source_url: string }[]
-  }
+  featured_media_url: string
 }
 
-export default function HomePage() {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [featuredImages, setFeaturedImages] = useState<{ [id: number]: string }>({})
+async function getPosts(): Promise<Post[]> {
+  const res = await fetch(
+    'https://mendoza.edu.ar/wp-json/wp/v2/posts?categories=6&per_page=8&_embed',
+    { next: { revalidate: 60 } }
+  )
+  const data = await res.json()
+  return data.map((post: any) => ({
+    id: post.id,
+    title: post.title,
+    link: post.link,
+    date: post.date,
+    featured_media_url:
+      post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/placeholder.jpg',
+  }))
+}
 
-  const sliderImages = [
-    '/slider1.jpg',
-    '/slider2.jpg',
-    '/slider3.jpg',
-    '/slider4.jpg',
-  ]
-
-  useEffect(() => {
-    fetch(
-      'https://mendoza.edu.ar/wp-json/wp/v2/posts?categories=6&per_page=8&_embed'
-    )
-      .then((res) => res.json())
-      .then((data: Post[]) => {
-        setPosts(data)
-        const imgMap: { [id: number]: string } = {}
-        data.forEach((post) => {
-          const img =
-            post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/placeholder.jpg'
-          imgMap[post.id] = img
-        })
-        setFeaturedImages(imgMap)
-      })
-  }, [])
+export default async function Home() {
+  const posts = await getPosts()
 
   return (
     <div className="min-h-screen bg-white">
       <header className="bg-white shadow-md w-full sticky top-0 z-50">
         <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="text-2xl font-bold text-blue-800">DGE</div>
+          <Image
+            src="https://www.mendoza.edu.ar/wp-content/uploads/2022/02/logodge2024enc.png"
+            alt="Logo DGE"
+            width={160}
+            height={48}
+          />
           <nav className="hidden md:flex gap-6">
             <a href="#" className="text-gray-700 hover:text-blue-700 font-semibold">Institucional</a>
             <a href="#" className="text-gray-700 hover:text-blue-700 font-semibold">Recursos</a>
@@ -58,20 +51,13 @@ export default function HomePage() {
       </header>
 
       <section className="relative w-full overflow-hidden">
-        <div className="w-full h-[320px] md:h-[460px] bg-blue-900 flex">
-          {sliderImages.map((src, index) => (
-            <div
-              key={index}
-              className="flex-shrink-0 w-full h-full relative"
-            >
-              <Image
-                src={src}
-                alt={`Slider ${index}`}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ))}
+        <div className="w-full h-[280px] md:h-[420px] bg-blue-900 relative">
+          <Image
+            src="https://www.mendoza.edu.ar/wp-content/uploads/2024/06/slide-feria-de-ciencias-monitor.png"
+            alt="Slider Feria de Ciencias"
+            fill
+            className="object-cover object-center"
+          />
         </div>
       </section>
 
@@ -83,7 +69,7 @@ export default function HomePage() {
               <div className="bg-white shadow-lg rounded-md overflow-hidden transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
                 <div className="h-40 w-full relative">
                   <Image
-                    src={featuredImages[post.id] || '/placeholder.jpg'}
+                    src={post.featured_media_url}
                     alt={post.title.rendered}
                     fill
                     className="object-cover"
