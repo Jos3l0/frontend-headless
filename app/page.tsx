@@ -12,11 +12,23 @@ type Post = {
 }
 
 async function getPosts(): Promise<Post[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/posts`, {
-    cache: 'no-store',
-  })
-  const data = await res.json()
-  return data
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/posts`, {
+      cache: 'no-store',
+    })
+
+    if (!res.ok) {
+      console.error('ERROR AL OBTENER POSTS:', res.statusText)
+      return []
+    }
+
+    const data = await res.json()
+    console.log('POSTS OBTENIDOS:', data)
+    return data
+  } catch (err) {
+    console.error('ERROR FATAL EN getPosts():', err)
+    return []
+  }
 }
 
 export default async function Home() {
