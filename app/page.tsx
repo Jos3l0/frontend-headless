@@ -23,7 +23,6 @@ async function getPosts(): Promise<Post[]> {
     }
 
     const data = await res.json()
-    console.log('POSTS OBTENIDOS:', data)
     return data
   } catch (err) {
     console.error('ERROR FATAL EN getPosts():', err)
@@ -39,7 +38,7 @@ export default async function Home() {
       <header className="bg-white shadow-md w-full sticky top-0 z-50">
         <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
           <Image
-            src="/logo-dge.png"
+            src="https://www.mendoza.edu.ar/wp-content/uploads/2022/02/logodge2024enc.png"
             alt="Logo DGE"
             width={160}
             height={48}
@@ -70,6 +69,9 @@ export default async function Home() {
       <section className="py-10 px-4 md:px-10 bg-blue-50">
         <h2 className="text-3xl font-bold text-gray-800 mb-8">Últimas noticias</h2>
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {posts.length === 0 && (
+            <p className="text-gray-600 col-span-full">No se pudieron cargar las noticias.</p>
+          )}
           {posts.map((post) => (
             <Link key={post.id} href={post.link} target="_blank" rel="noopener noreferrer">
               <div className="bg-white shadow-lg rounded-md overflow-hidden transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
