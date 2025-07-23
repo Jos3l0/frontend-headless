@@ -12,19 +12,11 @@ type Post = {
 }
 
 async function getPosts(): Promise<Post[]> {
-  const res = await fetch(
-    'https://mendoza.edu.ar/wp-json/wp/v2/posts?categories=6&per_page=8&_embed',
-    { next: { revalidate: 60 } }
-  )
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/posts`, {
+    cache: 'no-store',
+  })
   const data = await res.json()
-  return data.map((post: any) => ({
-    id: post.id,
-    title: post.title,
-    link: post.link,
-    date: post.date,
-    featured_media_url:
-      post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/placeholder.jpg',
-  }))
+  return data
 }
 
 export default async function Home() {
@@ -35,10 +27,11 @@ export default async function Home() {
       <header className="bg-white shadow-md w-full sticky top-0 z-50">
         <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
           <Image
-            src="https://www.mendoza.edu.ar/wp-content/uploads/2022/02/logodge2024enc.png"
+            src="/logo-dge.png"
             alt="Logo DGE"
             width={160}
             height={48}
+            priority
           />
           <nav className="hidden md:flex gap-6">
             <a href="#" className="text-gray-700 hover:text-blue-700 font-semibold">Institucional</a>
@@ -53,10 +46,11 @@ export default async function Home() {
       <section className="relative w-full overflow-hidden">
         <div className="w-full h-[280px] md:h-[420px] bg-blue-900 relative">
           <Image
-            src="https://www.mendoza.edu.ar/wp-content/uploads/2024/06/slide-feria-de-ciencias-monitor.png"
+            src="/slider-feria.png"
             alt="Slider Feria de Ciencias"
             fill
             className="object-cover object-center"
+            priority
           />
         </div>
       </section>
